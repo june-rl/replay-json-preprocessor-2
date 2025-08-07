@@ -1,15 +1,16 @@
 import {createReplayFromJSON} from "./lib/Replay";
 
 const INPUT_PATH = '\\\\lil-nas-x\\June\\replays\\JSON';
-const MODE: 'normal' | 'segmented' = "segmented"; // 'normal' or 'segmented'
-const EXTRAS = false; // whether to include extra data in the output
+const MODE: 'normal' | 'segmented' = "normal"; // 'normal' or 'segmented'
+const EXTRAS = true; // whether to include extra data in the output
 
-const outputFolderName = 'out_segmented';
+const outputFolderName = 'out_normal';
 
 import {readFile, lstat, readdir, access, mkdir, writeFile} from "fs/promises";
 import path from "node:path";
 import {parseReplaySegmented} from "./segmented";
 import {parseReplayNormal} from "./normal";
+import {generateCSVHeader} from "./lib/utils";
 
 
 const filePath = path.resolve(INPUT_PATH);
@@ -48,11 +49,14 @@ for(const file of files) {
 
         switch (MODE) {
             case "normal":
+
                 const lines = parseReplayNormal(replay, EXTRAS, 30 * 5);
                 const outputFilePath = path.join(outputFolderPath, `${name}.csv`);
                 console.log(`Writing to ${outputFilePath}`);
 
-                await writeFile(outputFilePath, lines.join("\n"));
+                const text = generateCSVHeader(EXTRAS, true) + "\n" + lines.join("\n");
+
+                await writeFile(outputFilePath, text);
 
                 break;
             case "segmented":
@@ -64,7 +68,9 @@ for(const file of files) {
                         console.log(`Writing to ${outputFilePath}`);
                         // Write the text to the file
 
-                        await writeFile(outputFilePath, value.text);
+                        const text = generateCSVHeader(EXTRAS, false) + "\n" + value.text;
+
+                        await writeFile(outputFilePath, text);
                     }
                 }
                 catch (e) {

@@ -90,9 +90,9 @@ export const getOutcome = (replay: Replay, frameThreshold: number): number => {
 
 export const generateCSVHeader = (extras: boolean = false, outcome: boolean = true) => {
     return [1,2,3,4,5,6].map(n => [`car${n}_location_x`,`car${n}_location_y`,`car${n}_location_z`,`car${n}_boost`].join(",")).join(",") + "," +
-    "ball_location_x,ball_location_y,ball_location_z," +
-    (extras ? "blue_goal_distance,orange_goal_distance," + [1,2,3,4,5,6].map(n => `car${n}_ball_distance`).join(",") + "," : "") +
-    outcome ? ",outcome" : "";
+    "ball_location_x,ball_location_y,ball_location_z" +
+    (extras ? ",blue_goal_distance,orange_goal_distance," + [1,2,3,4,5,6].map(n => `car${n}_ball_distance`).join(",") : "") +
+    (outcome ? ",outcome" : "");
 }
 
 export const generateCSVLine = (data: ReturnType<typeof getFrameData>, extras: boolean, outcome: boolean = true) => {
@@ -130,8 +130,8 @@ export const getFrameData = (replay: Replay, frameThreshold: number) => {
         }
 
         // cut out frames after goal scored
-        let frameThreshold = 8*30; // 8 seconda at 30hz
-        let goalsWithinThreshold = replay.goals.filter(g => replay.currentFrame - g.frame < frameThreshold && replay.currentFrame > g.frame);
+        let goalFrameThreshold = 8*30; // 8 seconda at 30hz
+        let goalsWithinThreshold = replay.goals.filter(g => replay.currentFrame - g.frame < goalFrameThreshold && replay.currentFrame > g.frame);
         if(goalsWithinThreshold.length > 0) {
             return null;
         }

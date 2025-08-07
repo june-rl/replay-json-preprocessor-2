@@ -6,7 +6,11 @@ export const parseReplayNormal = (replay: Replay, extras: boolean = false, nSeco
     const lines = [];
     for(let i = 0; i < replay.networkFrames.length; i++) {
         replay.executeFrame(i);
-        lines.push(generateCSVLine(getFrameData(replay, nSecondsBeforeGoal * 30), extras));
+        try{
+            lines.push(generateCSVLine(getFrameData(replay, nSecondsBeforeGoal * 30), extras));
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     return lines;
