@@ -24,7 +24,7 @@ export const getCars = (replay: Replay): Car[] => {
         const angular_velocity = objectMap.get("TAGame.RBActor_TA:ReplicatedRBState")?.get("RigidBody").angular_velocity ?? {x:0, y:0, z:0};
         const boost = carActorsBoostMap.get(key) || 0;
         const team = objectMap.get("TAGame.Car_TA:TeamPaint")?.get("TeamPaint")?.team;
-        const hidden = !!objectMap.get("Engine.Actor:bHidden")?.get("Boolean") ? 0 : 1;
+        const hidden = objectMap.get("Engine.Actor:bHidden")?.get("Boolean") ? 1 : 0;
         cars.push({
             location,
             rotation,
@@ -36,9 +36,14 @@ export const getCars = (replay: Replay): Car[] => {
         })
     });
 
+    const visible = cars.filter(car => car.hidden === 0);
+
+    if(visible.filter(c => c.team === 0).length !== 3 || visible.filter(c => c.team === 1).length !== 3) {
+        throw new Error("Invalid number of cars per team")
+    }
 
     // cars are sorted by team, blue first then orange
-    return cars.toSorted((a, b) => a.team - b.team);
+    return visible.toSorted((a, b) => a.team - b.team);
 }
 
 export const getBall = (replay: Replay): Ball | null => {

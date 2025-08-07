@@ -1,10 +1,10 @@
 import {createReplayFromJSON} from "./lib/Replay";
 
-const INPUT_PATH = '';
+const INPUT_PATH = '\\\\lil-nas-x\\June\\replays\\JSON';
 const MODE: 'normal' | 'segmented' = "segmented"; // 'normal' or 'segmented'
 const EXTRAS = false; // whether to include extra data in the output
 
-const outputFolderName = 'out_default';
+const outputFolderName = 'out_segmented';
 
 import {readFile, lstat, readdir, access, mkdir, writeFile} from "fs/promises";
 import path from "node:path";
@@ -27,8 +27,9 @@ await access(outputFolderPath).catch(async () => {
 if(MODE === "segmented") {
     // Ensure output folders exist
     [0,1,2].forEach(async (n) => {
-        await access(path.join(outputFolderPath, `${n}`)).catch(async () => {
-            await mkdir(outputFolderPath);
+        const outcomeFolderPath = path.join(outputFolderPath, `${n}`);
+        await access(outcomeFolderPath).catch(async () => {
+            await mkdir(outcomeFolderPath);
         })
     })
 }
@@ -47,7 +48,7 @@ for(const file of files) {
 
         switch (MODE) {
             case "normal":
-                const lines = parseReplayNormal(replay, EXTRAS);
+                const lines = parseReplayNormal(replay, EXTRAS, 30 * 5);
                 const outputFilePath = path.join(outputFolderPath, `${name}.csv`);
                 console.log(`Writing to ${outputFilePath}`);
 
@@ -56,15 +57,15 @@ for(const file of files) {
                 break;
             case "segmented":
                 try{
-                    const fileTexts = parseReplaySegmented(replay, EXTRAS, 30 * 5, 30, 4);
+                    const fileTexts = parseReplaySegmented(replay, EXTRAS, 30 * 2, 60, 5);
 
-                    fileTexts.forEach(async (fileText, index) => {
-                        const outputFilePath = path.join(outputFolderPath, `${fileText.outcome}`, `${name}_${index}.csv`);
+                    for( const [index, value] of fileTexts.entries()) {
+                        const outputFilePath = path.join(outputFolderPath, `${value.outcome}`, `${name}_${index}.csv`);
                         console.log(`Writing to ${outputFilePath}`);
                         // Write the text to the file
 
-                        await writeFile(outputFilePath, fileText.text);
-                    })
+                        await writeFile(outputFilePath, value.text);
+                    }
                 }
                 catch (e) {
                     console.log(`Error processing file ${file}:`, e);
